@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}IAMHUB Sovereign Console{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/iamhub-admin.css">
+  <style>
+    body {
+      background: black url('/static/img/starfield.gif') repeat;
+      color: gold;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 1rem 2rem;
+      border-bottom: 2px solid gold;
+    }
+    header h1 {
+      color: gold;
+      font-size: 2rem;
+      margin: 0;
+    }
+    nav a {
+      color: white;
+      margin-right: 15px;
+      text-decoration: none;
+    }
+    .content {
+      padding: 2rem;
+      background-color: rgba(0, 0, 0, 0.6);
+      min-height: 80vh;
+    }
+    footer {
+      background-color: rgba(0, 0, 0, 0.8);
+      text-align: center;
+      padding: 1rem;
+      color: gold;
+      font-size: 0.9rem;
+      border-top: 1px solid gold;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <h1>IAMHUB Sovereign Console</h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/admin/">Admin</a>
+      <a href="/championps/">ChampionPs</a>
+    </nav>
+  </header>
+
+  <div class="content">
+    {% block content %}
+    <p>Welcome to IAMHUB. Choose your Champion Path.</p>
+    {% endblock %}
+  </div>
+
+  <footer>
+    &copy; {{ now|date:"Y" }} IAMHUB Sovereign Systems
+  </footer>
+</body>
+</html>
