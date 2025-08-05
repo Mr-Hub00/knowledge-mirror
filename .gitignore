@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+ENV/
+venv/
+pip-log.txt
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+
+# Django migrations
+**/migrations/
+!**/migrations/__init__.py
+
+# VSCode, PyCharm, JetBrains settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Frontend artifacts (optional: keep built CSS, ignore source files if using tools)
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+
+# OS metadata
+ehthumbs.db
+Icon?
+desktop.ini
+
+# Build outputs
+build/
+staticfiles/
+static/
+
+# Render deploy-specific cache (optional)
+.render-cache/
