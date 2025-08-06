@@ -1,1 +1,0 @@
-web: gunicorn iamhub_project.wsgi:application
