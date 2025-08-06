@@ -1,1 +1,1 @@
-web: gunicorn backend.iamhub_project.wsgi
+web: gunicorn iamhub_project.wsgi:application

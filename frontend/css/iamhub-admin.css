@@ -10,4 +10,17 @@ header, footer {
 }
 nav a {
   color: white;
+  margin-right: 15px;
+  text-decoration: none;
+}
+.content {
+  padding: 2rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  min-height: 80vh;
+}
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  border-top: 1px solid gold;
 }
