@@ -54,3 +54,6 @@ DATABASES = {
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
 
 DEBUG = True
+
+import os
+SECRET_KEY = 'b3u$2r@4t5j5%)w#swd%_0j8@9h&@6t_w6x&2+g0^=r2v3h3hy'
