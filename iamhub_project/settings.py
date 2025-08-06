@@ -9,14 +9,30 @@ INSTALLED_APPS = [
     'championps',  # Your main app
 ]
 ROOT_URLCONF = 'iamhub_project.urls'
-from pathlib import Path
-import os
 
+import os
+from pathlib import Path
+
+# BASE_DIR setup
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-only-key')
+
+# ✅ DEBUG controlled by env variable
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# ✅ Add your live domain here
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
-import os
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # ✅ for collectstatic
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Media (if needed)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 TEMPLATES = [
     {
@@ -36,6 +52,7 @@ TEMPLATES = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ WhiteNoise for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -51,9 +68,3 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
-
-DEBUG = True
-
-import os
-SECRET_KEY = 'b3u$2r@4t5j5%)w#swd%_0j8@9h&@6t_w6x&2+g0^=r2v3h3hy'
