@@ -1,3 +1,4 @@
+ROOT_URLCONF = 'iamhub_project.urls'
 from pathlib import Path
 import os
 
