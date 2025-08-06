@@ -1,0 +1,1 @@
+git add frontend/css/iamhub-admin.css backend/templates/base.html && git commit -m "Feature: Add glowing gold text and shooting star effect on link click for cosmic transitions" && git push origin knowledge

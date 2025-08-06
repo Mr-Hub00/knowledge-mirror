@@ -1,3 +1,13 @@
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # 'grappelli',  # Uncomment if using django-grappelli
+    'championps',  # Your main app
+]
 ROOT_URLCONF = 'iamhub_project.urls'
 from pathlib import Path
 import os
