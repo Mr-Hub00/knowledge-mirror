@@ -89,6 +89,7 @@
   <footer>
     &copy; {{ now|date:"Y" }} IAMHUB Sovereign Systems
   </footer>
+<div id="shooting-star"></div>
 <script>
 // Trigger comet streak when a tier two/three link appears
 function showComet() {
@@ -102,6 +103,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // Show comet streak for each .comet-link in nav
   document.querySelectorAll('.comet-link').forEach(function(link) {
     showComet();
+  });
+
+  // Shooting star on any link click
+  const links = document.querySelectorAll('a');
+  const star = document.getElementById('shooting-star');
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      star.style.animation = 'none';
+      star.offsetHeight; // re-trigger animation
+      star.style.animation = 'shoot 1s ease-out forwards';
+    });
   });
 });
 </script>
