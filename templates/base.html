@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}IAMHUB{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="icon" href="{% static 'images/favicon.ico' %}">
+</head>
+<body class="mode-classic">
+  <div class="starfield" aria-hidden="true"></div>
+
+  <header class="glow-title"><h1>Welcome to IAMHUB</h1></header>
+  <main id="main" class="page-content">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    <p>&copy; {% now "Y" %} IAMHUB. All Rights Reserved.</p>
+  </footer>
+  <button id="toggle-bg"
+          class="bg-toggle"
+          type="button"
+          aria-pressed="false"
+          aria-label="Toggle starfield style">
+    <span aria-hidden="true">🪐</span>
+    <span class="sr-only">Toggle starfield style</span>
+  </button>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const KEY = 'iamhub-bg';
+      const body = document.body;
+      const btn  = document.getElementById('toggle-bg');
+      if (!btn) return;
+      try {
+        const saved = localStorage.getItem(KEY);
+        if (saved === 'repo') {
+          body.classList.add('mode-repo');
+          body.classList.remove('mode-classic');
+          btn.setAttribute('aria-pressed', 'true');
+        }
+      } catch(_) {}
+      btn.addEventListener('click', () => {
+        const toRepo = !body.classList.contains('mode-repo');
+        body.classList.toggle('mode-repo', toRepo);
+        body.classList.toggle('mode-classic', !toRepo);
+        btn.setAttribute('aria-pressed', String(toRepo));
+        try { localStorage.setItem(KEY, toRepo ? 'repo' : 'classic'); } catch(_) {}
+      });
+    });
+  </script>
+</body>
+</html>

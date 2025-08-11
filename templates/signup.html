@@ -1,0 +1,14 @@
+{% extends "indexapp/base.html" %}
+{% block title %}Home | IAMHUB{% endblock %}
+{% block meta_description %}
+  <meta name="description" content="Cosmic hub for projects, contact, and more.">
+{% endblock %}
+{% block content %}
+  <img src="{% static 'images/starfield.png' %}" alt="Animated cosmic starfield background">
+  <h2>Create Account</h2>
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Account</button>
+  </form>
+  <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+{% endblock %}

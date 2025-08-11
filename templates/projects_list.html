@@ -1,0 +1,20 @@
+{% extends "indexapp/base.html" %}
+{% load static %}
+{% block title %}Home | IAMHUB{% endblock %}
+{% block meta_description %}
+  <meta name="description" content="Cosmic hub for projects, contact, and more.">
+{% endblock %}
+{% block content %}
+  <img src="{% static 'images/starfield.png' %}" alt="Animated cosmic starfield background">
+  <h2>Projects</h2>
+  <ul>
+    {% for p in projects %}
+      <li>
+        <a href="{% url 'project_detail' p.slug %}">{{ p.title }}</a>
+        <p>{{ p.description|truncatewords:20 }}</p>
+      </li>
+    {% empty %}
+      <li>No projects yet.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

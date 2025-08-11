@@ -1,0 +1,12 @@
+{% extends "indexapp/base.html" %}
+{% block title %}Home | IAMHUB{% endblock %}
+{% block meta_description %}
+  <meta name="description" content="Cosmic hub for projects, contact, and more.">
+{% endblock %}
+
+{% block content %}
+  <img src="{% static 'images/starfield.png' %}" alt="Animated cosmic starfield background">
+  <h2>Welcome, {{ request.user.username }}!</h2>
+  <p>This page is protected.</p>
+  <p><a href="{% url 'logout' %}">Logout</a></p>
+{% endblock %}
