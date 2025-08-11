@@ -9,8 +9,8 @@
   <link rel="icon" href="{% static 'images/favicon.ico' %}">
 </head>
 <body class="mode-classic">
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="starfield" aria-hidden="true"></div>
-
   <header class="glow-title"><h1>Welcome to IAMHUB</h1></header>
   <main id="main" class="page-content">
     {% block content %}{% endblock %}
@@ -51,3 +51,153 @@
   </script>
 </body>
 </html>
+
+<style>
+/* ===== Base layout ===== */
+html, body { height: 100%; }
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  font-family:system-ui, sans-serif;
+  color:#ffd700;
+  /* Default “classic” background */
+  background: radial-gradient(ellipse at bottom, #0d1b2a 0%, #000000 100%);
+}
+
+/* Content & footer placement */
+.page-content{ flex:1 0 auto; z-index:1; padding:2rem; color:#f5f5f5; }
+.footer{
+  flex-shrink:0;
+  width:100%;
+  text-align:center;
+  padding:1rem 0;
+  background:rgba(22,33,62,.8);
+  color:#fff;
+  border-top:1px solid #333;
+  z-index:2;
+}
+
+/* ===== Starfield (PNG) – shown only in repo mode ===== */
+.starfield{
+  position:fixed;
+  inset:0;
+  z-index:-1;            /* behind everything */
+  pointer-events:none;
+  background-repeat:repeat;
+  background-size:600px 600px;
+  opacity:0;             /* hidden in classic mode */
+}
+
+/* Classic = gradient only (keep PNG hidden) */
+.mode-classic .starfield{ opacity:0; }
+
+/* Repo PNG = show + animate */
+.mode-repo .starfield{
+  opacity:.95;
+  background-image:url("/static/images/starfield.png");
+  animation: star-drift 120s linear infinite, twinkle 8s ease-in-out infinite;
+}
+
+@keyframes star-drift{
+  0%{   background-position: 0px   0px; }
+  100%{ background-position: 800px 1200px; }
+}
+@keyframes twinkle{
+  0%,100%{ opacity:.85; }
+  50%{    opacity:1; }
+}
+
+/* ===== Navbar (minimal) ===== */
+.navbar{
+  position:sticky; top:0; z-index:10;
+  background:rgba(0,0,0,.7);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  padding:1rem; text-align:center;
+}
+.navbar ul{
+  list-style:none; margin:0; padding:0;
+  display:flex; gap:2rem; justify-content:center;
+}
+.navbar a{
+  color:gold; text-decoration:none; font-weight:600;
+  transition:color .2s ease;
+}
+.navbar a:hover{ color:#ffcc00; }
+
+/* Active nav state */
+.nav-menu a[aria-current="page"]{
+  background: rgba(255,209,102,.15);
+  outline:1px solid rgba(255,209,102,.25);
+  border-radius:.5rem;
+}
+
+/* ===== Title Glow (single, consistent version) ===== */
+.glow-title h1{
+  text-align:center;
+  font-size:3rem;
+  color:#ffd700;
+  text-shadow:
+    0 0 5px  #ffd700,
+    0 0 10px #ffd700,
+    0 0 20px #ffcc00,
+    0 0 40px #ff9900;
+  animation: title-glow 6s ease-in-out infinite;
+}
+@keyframes title-glow{
+  0%,100%{
+    text-shadow:
+      0 0 5px  #ffd700,
+      0 0 10px #ffd700,
+      0 0 20px #ffcc00,
+      0 0 40px #ff9900;
+  }
+  50%{
+    text-shadow:
+      0 0 10px #ffd700,
+      0 0 20px #ffcc00,
+      0 0 30px #ff9900,
+      0 0 40px #ff3300;
+  }
+}
+
+/* ===== Toggle button ===== */
+.bg-toggle{
+  position:fixed; right:1rem; bottom:1rem; z-index:9999;
+  padding:.45rem .7rem; border-radius:.75rem; font:inherit; cursor:pointer;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.5); color:#ffd;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+.bg-toggle:hover{ background:rgba(0,0,0,.7); }
+.bg-toggle:focus-visible{ outline:2px solid #ffd700; outline-offset:2px; }
+
+/* Skip link */
+.skip-link{
+  position:absolute; left:.75rem; top:-40px;
+  background:#000; color:#ffd700; padding:.5rem .75rem;
+  border:1px solid #ffd700; border-radius:.5rem;
+  transition: top .15s ease; z-index:100;
+}
+.skip-link:focus{ top:.75rem; }
+
+/* Messages */
+.messages{
+  list-style:none; padding:.75rem 1rem; margin:0 1rem 1rem;
+  border:1px solid rgba(255,255,255,.2); border-radius:.5rem;
+  background:rgba(0,0,0,.4);
+}
+.messages li{ margin:.25rem 0; }
+.messages li.success{ color:#9be69b; }
+.messages li.error{   color:#ff9b9b; }
+.messages li.info{    color:#ffe08a; }
+
+/* Mobile tweak for title */
+@media (max-width:600px){
+  .glow-title h1{ font-size:2rem; }
+}
+</style>
