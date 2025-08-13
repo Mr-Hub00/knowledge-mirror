@@ -91,3 +91,9 @@ if not DEBUG:
 
 ROOT_URLCONF = "mrhub_project.urls"
 WSGI_APPLICATION = "mrhub_project.wsgi.application"
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "dashboard"
+LOGOUT_REDIRECT_URL = "login"
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]

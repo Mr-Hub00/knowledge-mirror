@@ -2,27 +2,35 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 ENVIRONMENT = os.getenv("DJANGO_ENV", "development")
 DEBUG = ENVIRONMENT != "production"
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "fallback-secret-key")
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
-# --- apps ---
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-insecure-key")
+ALLOWED_HOSTS = (
+    ["localhost", "127.0.0.1"] if DEBUG
+    else os.getenv("DJANGO_ALLOWED_HOSTS", "iamhub.net,www.iamhub.net").split(",")
+)
+
+# Static files
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
+
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "indexapp",  # add your apps here
+    "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
+    "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
+    "indexapp",
 ]
 
-# --- middleware ---
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -34,28 +42,20 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# --- urls/wsgi ---
-ROOT_URLCONF = "mrhub.urls"
-WSGI_APPLICATION = "mrhub.wsgi.application"
+TEMPLATES = [{
+    "BACKEND": "django.template.backends.django.DjangoTemplates",
+    "DIRS": [BASE_DIR / "templates"],
+    "APP_DIRS": True,
+    "OPTIONS": {
+        "context_processors": [
+            "django.template.context_processors.debug",
+            "django.template.context_processors.request",
+            "django.contrib.auth.context_processors.auth",
+            "django.contrib.messages.context_processors.messages",
+        ],
+    },
+}]
 
-# --- templates ---
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    }
-]
-
-# --- database (SQLite) ---
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -63,39 +63,27 @@ DATABASES = {
     }
 }
 
-# --- auth redirects ---
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+ROOT_URLCONF = "mrhub_project.urls"
+WSGI_APPLICATION = "mrhub_project.wsgi.application"
+
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "login"
 
-# --- i18n ---
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
-USE_I18N = True
-USE_TZ = True
-
-# --- static files ---
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-# --- media ---
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
-# --- security for production ---
 if not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    CSRF_TRUSTED_ORIGINS = ["https://iamhub.net", "https://www.iamhub.net"]
 
-# --- logging ---
-if not DEBUG:
-    (BASE_DIR / "logs").mkdir(exist_ok=True)
+    import logging
+    LOGS_DIR = BASE_DIR / "logs"
+    LOGS_DIR.mkdir(exist_ok=True)
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -103,12 +91,8 @@ if not DEBUG:
             "file": {
                 "level": "WARNING",
                 "class": "logging.FileHandler",
-                "filename": BASE_DIR / "logs" / "django.log",
+                "filename": LOGS_DIR / "django.log",
             },
         },
-        "loggers": {
-            "django": {"handlers": ["file"], "level": "WARNING", "propagate": True},
-        },
+        "loggers": {"django": {"handlers": ["file"], "level": "WARNING", "propagate": True}},
     }
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
