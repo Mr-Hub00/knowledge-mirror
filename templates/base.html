@@ -24,15 +24,15 @@
   <header class="glow-title"><h1>Welcome to IAMHUB</h1></header>
 
   {% if messages %}
-    <ul class="messages">
-      {% for m in messages %}
-        <li class="{{ m.tags }}">{{ m }}</li>
-      {% endfor %}
-    </ul>
+    <ul class="messages">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>
   {% endif %}
 
   <main id="main" class="page-content">
     {% block content %}{% endblock %}
+    <ul>
+      <li>Project 1</li>
+      <li>Project 2</li>
+    </ul>
   </main>
 
   <footer class="footer">

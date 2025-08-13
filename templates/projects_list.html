@@ -1,20 +1,27 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Home | IAMHUB{% endblock %}
+{% block title %}Projects List | IAMHUB{% endblock %}
 {% block meta_description %}
-  <meta name="description" content="Cosmic hub for projects, contact, and more.">
+  <meta name="description" content="Explore a list of projects in the IAMHUB ecosystem.">
+  <meta name="keywords" content="IAMHUB, projects, list, exploration">
 {% endblock %}
 {% block content %}
   <img src="{% static 'images/starfield.png' %}" alt="Animated cosmic starfield background">
   <h2>Projects</h2>
-  <ul>
-    {% for p in projects %}
+    <ul>
+  {% for p in projects %}
       <li>
-        <a href="{% url 'project_detail' p.slug %}">{{ p.title }}</a>
-        <p>{{ p.description|truncatewords:20 }}</p>
+        <a href="{% url 'project_detail' p.slug %}">
+          {{ p.title }}
+        </a>
+        <span>{{ p.description|truncatewords:20 }}</span>
       </li>
-    {% empty %}
+  {% empty %}
       <li>No projects yet.</li>
-    {% endfor %}
+  {% endfor %}
+    </ul>
+  <ul>
+    <li>Project 1</li>
+    <li>Project 2</li>
   </ul>
 {% endblock %}
