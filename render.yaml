@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: mrhub
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn mrhub_project.wsgi:application"
-    staticPublishPath: staticfiles
-    autoDeploy: true
