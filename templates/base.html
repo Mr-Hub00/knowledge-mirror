@@ -24,7 +24,7 @@
       </li>
       <li>
         <a href="{% url 'projects_list' %}"
-           {% if request.resolver_match.url_name in ['projects_list','project_detail'] %}aria-current="page"{% endif %}>
+           {% if request.resolver_match.url_name == 'projects_list' or request.resolver_match.url_name == 'project_detail' %}aria-current="page"{% endif %}>
           Projects
         </a>
       </li>
