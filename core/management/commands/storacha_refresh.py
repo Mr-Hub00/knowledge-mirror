@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from storacha_tokens import start_token_refresher, refresh_now  # <-- no underscore
+from storacha_tokens import start_token_refresher, refresh_now
 
 class Command(BaseCommand):
     help = "Refresh Storacha bridge tokens now and ensure the background refresher is running."
