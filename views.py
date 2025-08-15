@@ -8,6 +8,7 @@ from core.services.receipts import send_stamp_receipt, send_verification_notice
 from django.conf import settings
 from core.models import DocumentStamp
 from core.api.utils import make_share_token
+import requests
 
 def home(request):
     return render(request, "base.html")
@@ -37,3 +38,11 @@ def verify_stamp(request, pk: int):
     stamp.verified_at = timezone.now()
     stamp.verify_txid = txid[:120]
     stamp.save(update_fields=["verified", "verified_at", "verify_txid"])
+
+from core.services.storacha import get_headers  # Add this import at the top or before the function
+
+def storacha_list():
+    headers, bridge_url = get_headers()
+    r = requests.post(bridge_url, json={"cap": "upload/list"}, headers=headers, timeout=30)
+    r.raise_for_status()
+    return r.json()

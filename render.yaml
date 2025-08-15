@@ -18,6 +18,16 @@ services:
           property: connectionString
       - key: ALLOWED_HOSTS
         value: "iamhub.net,.onrender.com"
+      - key: STORACHA_ENABLED
+        value: "True"
+      - key: STORACHA_BRIDGE_URL
+        value: "https://up.storacha.network/bridge"
+      - key: STORACHA_SPACE_DID
+        value: "did:key:...        # your Space DID"
+      - key: STORACHA_CAN
+        value: "store/add,upload/add,upload/list"
+      - key: STORACHA_TOKEN_TTL_SECS
+        value: "21600" # optional, default 6h
 databases:
   - name: iamhub-db
     ipAllowList: []
