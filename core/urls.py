@@ -1,7 +1,7 @@
 from django.urls import path
-from .views_healthz import healthz
+from .views import storacha_health
 
 urlpatterns = [
-    # ...existing urls...
-    path("healthz/", healthz, name="healthz"),
+    # ...other routes...
+    path("storacha/health", storacha_health),
 ]

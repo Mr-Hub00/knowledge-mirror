@@ -9,6 +9,8 @@ from django.conf import settings
 from core.models import DocumentStamp
 from core.api.utils import make_share_token
 import requests
+import os
+from django.http import JsonResponse
 
 def home(request):
     return render(request, "base.html")
@@ -46,3 +48,9 @@ def storacha_list():
     r = requests.post(bridge_url, json={"cap": "upload/list"}, headers=headers, timeout=30)
     r.raise_for_status()
     return r.json()
+
+def storacha_health(request):
+    return JsonResponse({
+        "space_did": os.environ.get("STORACHA_SPACE_DID", "MISSING"),
+        "refresher": "started"
+    })

@@ -3,13 +3,14 @@ import threading
 import time
 import subprocess
 import shlex
-from storacha_tokens import start_token_refresher, refresh_now
 
-_REFRESH_INTERVAL = int(os.environ.get("STORACHA_TTL", "14400")) - 300  # 5 min before expiry
-_REF_STARTED = False
-_LOCK = threading.Lock()
+# --- your real refresh code should live inside these two functions ---
 
-def refresh_now():
+def refresh_now() -> bool:
+    """
+    Generate/refresh STORACHA_SECRET and STORACHA_AUTH and export them to env.
+    Return True on success, False on failure.
+    """
     space_did = os.environ["STORACHA_SPACE_DID"]
     ttl       = int(os.environ.get("STORACHA_TTL", "14400"))   # 4h default
     caps      = os.environ.get("STORACHA_CAPABILITIES", "store/add,upload/add,upload/list")
@@ -32,28 +33,20 @@ def refresh_now():
 
     os.environ["STORACHA_SECRET"] = secret
     os.environ["STORACHA_AUTH"]   = auth
+    return True
 
-def start_token_refresher():
-    global _REF_STARTED
-    with _LOCK:
-        if _REF_STARTED:
-            return
-        _REF_STARTED = True
-
+def start_token_refresher(interval_seconds: int = 50 * 60) -> None:
+    """
+    Starts a background thread that calls refresh_now() periodically.
+    """
     def loop():
-        try:
-            refresh_now()
-        except Exception as e:
-            time.sleep(30)
         while True:
-            ttl = int(os.environ.get("STORACHA_TTL", "14400"))
-            safety = min(600, max(300, ttl // 10))
-            sleep_s = max(900, ttl - safety)
-            time.sleep(sleep_s)
             try:
                 refresh_now()
-            except Exception:
-                time.sleep(60)
+            except Exception as e:
+                # Optional: log/print e
+                pass
+            time.sleep(interval_seconds)
 
     t = threading.Thread(target=loop, name="storacha-token-refresher", daemon=True)
     t.start()
