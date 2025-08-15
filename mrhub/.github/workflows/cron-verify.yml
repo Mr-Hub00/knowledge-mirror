@@ -1,0 +1,22 @@
+name: Verify Pending Stamps
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+env:
+  SITE_URL: ${{ secrets.SITE_URL }}
+  CRON_TOKEN: ${{ secrets.INTERNAL_CRON_TOKEN }}
+
+jobs:
+  ping-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST to /internal/verify-pending/
+        run: |
+          SITE_URL="${SITE_URL:-https://your-default-site-url.com}"
+          TOKEN="${CRON_TOKEN}"
+          curl -sS -X POST "$SITE_URL/api/v1/internal/verify-pending/" \
+            -H "Authorization: Token $TOKEN" \
+            -H "Content-Type: application/json" | jq .

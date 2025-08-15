@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document Stamp Receipt</title>
+    <link rel="stylesheet" href="stamp_receipt.css">
+  </head>
+  <body>
+    <h2>IAmHub — Document Stamp Receipt</h2>
+    <p><strong>Title:</strong> {{ title }}</p>
+    <p><strong>SHA-256:</strong> <code>{{ sha256 }}</code></p>
+    <p><strong>IPFS CID:</strong> <code>{{ ipfs_cid }}</code></p>
+    <p><strong>Timestamped at:</strong> {{ timestamped_at }}</p>
+    <p><strong>Verified:</strong> {% if verified %}Yes{% else %}No{% endif %}
+      {% if verified_at %} ({{ verified_at }}){% endif %}
+    </p>
+    {% if share_url %}
+      <p><strong>Share link:</strong> <a href="{{ share_url }}">{{ share_url }}</a></p>
+    {% endif %}
+    <hr>
+    <p>View in IAmHub: <a href="{{ site_url }}/admin/core/documentstamp/{{ stamp_id }}/change/">{{ site_url }}/admin/core/documentstamp/{{ stamp_id }}/change/</a></p>
+  </body>
+</html>

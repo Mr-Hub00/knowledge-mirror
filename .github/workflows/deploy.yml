@@ -1,0 +1,59 @@
+name: CI + Render Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DEBUG: "False"
+      FEATURE_SHARE_STAMP: "True"
+      STORACHA_API_KEY: ${{ secrets.STORACHA_API_KEY }}
+      INTERNAL_CRON_TOKEN: ${{ secrets.INTERNAL_CRON_TOKEN }}
+      ALLOWED_HOSTS: iamhub.net,www.iamhub.net
+      CSRF_TRUSTED_ORIGINS: https://iamhub.net,https://www.iamhub.net
+      SITE_URL: https://iamhub.net
+      STORACHA_BRIDGE_URL: https://up.storacha.network/bridge
+      # STORACHA_SPACE_DID: ${{ secrets.STORACHA_SPACE_DID }}
+      STORACHA_AUTH: ${{ secrets.STORACHA_AUTH }}
+      # STORACHA_SECRET: ${{ secrets.STORACHA_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run tests
+        run: pytest -q
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK secret is not set." && exit 1
+          fi
+          curl -fsSL -X POST "$RENDER_DEPLOY_HOOK"
+      - name: Trigger Netlify build
+        if: success()
+        env:
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: curl -fsSL -X POST "$NETLIFY_BUILD_HOOK"
+      - name: Health check
+        run: curl -fsSL https://<your-render-app>.onrender.com/healthz

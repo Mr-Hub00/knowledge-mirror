@@ -1,0 +1,33 @@
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables
+.env
+.env.*
+*/.env
+mrhub/mrhub/.env
+
+# Django/migrations/bytecode/cache
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django specific
+db.sqlite3
+/staticfiles/
+media/
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+.env
+*.env

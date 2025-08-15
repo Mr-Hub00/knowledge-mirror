@@ -1,0 +1,49 @@
+:root { --gold:#d4af37; --ink:#000; --space:#0d0d12; --glow:#ffd36e; }
+* { box-sizing: border-box; }
+html, body { height:100%; }
+body {
+  margin:0; color:#f7f5f2; background: radial-gradient(ellipse at bottom, #0b0f17 0%, #000 100%);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  overflow-x:hidden;
+}
+
+/* Star layers */
+.stars, .twinkles {
+  position:fixed; inset:0; z-index:-1; background-repeat:repeat;
+  opacity:.9; pointer-events:none;
+}
+.stars { background-image:url("/static/images/stars.png"); animation: drift 120s linear infinite; }
+.twinkles { background-image:url("/static/images/twinkles.png"); mix-blend-mode:screen; animation: twinkle 4s infinite ease-in-out; }
+
+@keyframes twinkle { 0%,100%{opacity:.7} 50%{opacity:1} }
+@keyframes drift   { 0%{background-position:0 0} 100%{background-position:2000px 1000px} }
+
+.navbar {
+  position:sticky; top:0; display:flex; justify-content:space-between; align-items:center;
+  padding:.8rem 1.2rem; background:rgba(0,0,0,.35); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border-bottom:1px solid rgba(212,175,55,.2);
+}
+.navbar .brand { font-weight:700; letter-spacing:.5px }
+.navbar .gold  { color:var(--gold) }
+.navbar nav a {
+  color:#eae7df; text-decoration:none; margin-left:1rem; transition:opacity .2s;
+}
+.navbar nav a:hover { opacity:.75 }
+
+.hero {
+  min-height:calc(100vh - 120px); display:grid; place-items:center; text-align:center; padding:2rem;
+}
+.hero h1 { font-size: clamp(2.2rem, 6vw, 4.2rem); margin:.2rem 0; letter-spacing:.5px }
+.hero p  { max-width:60ch; opacity:.9 }
+
+.cta {
+  display:inline-block; margin-top:1.2rem; padding:.9rem 1.2rem; border:1px solid var(--gold);
+  color:var(--ink); background:linear-gradient(180deg, var(--glow), var(--gold));
+  border-radius:10px; text-decoration:none; font-weight:700; box-shadow: 0 0 12px rgba(255,218,128,.35);
+  transition: transform .15s ease, box-shadow .2s ease;
+}
+.cta:hover { transform: translateY(-2px); box-shadow:0 0 22px rgba(255,218,128,.55); }
+
+.glow-footer {
+  display:flex; justify-content:center; align-items:center; padding:1rem; font-size:.9rem;
+  border-top:1px solid rgba(212,175,55,.2); background: radial-gradient(ellipse at top, rgba(255,211,110,.10), rgba(0,0,0,.35));
+}
