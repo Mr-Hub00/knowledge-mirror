@@ -93,3 +93,6 @@ Then repeat steps 1–4 to deploy the cleanup.
 ---
 
 **You’re ready for production!
+git add mrhub/settings.py
+git commit -m "Fix ALLOWED_HOSTS/CSRF, middleware order, and CORS for Render"
+git push origin knowledge 

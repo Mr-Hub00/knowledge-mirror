@@ -8,9 +8,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-default-key")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",") if os.environ.get("ALLOWED_HOSTS") else []
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if os.environ.get("CSRF_TRUSTED_ORIGINS") else []
+def env_list(name: str):
+    raw = os.getenv(name, "")
+    return [item.strip() for item in raw.split(",") if item.strip()]
 
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+
+# Safety net: pick up the Render hostname automatically
+RENDER_HOST = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_HOST:
+    if RENDER_HOST not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(RENDER_HOST)
+    if ".onrender.com" not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(".onrender.com")
+    render_origin = f"https://{RENDER_HOST}"
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
+
+# Local dev safety fallback
+if DEBUG and not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+if DEBUG and not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -27,7 +47,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 INSTALLED_APPS = [
-    'grappelli',               # <-- must be first!
+    'grappelli',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -36,17 +56,17 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "drf_spectacular",
-    "corsheaders",             # <-- add if you need CORS
-    "core",  # your main app
+    "corsheaders",
+    "core",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',   # <-- right here!
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # <-- moved above CSRF
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -103,7 +123,7 @@ TEMPLATES = [
     },
 ]
 
-SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "60"))  # Start low, raise after confirming HTTPS
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "60"))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv("SECURE_HSTS_INCLUDE_SUBDOMAINS", "True").lower() == "true"
 SECURE_HSTS_PRELOAD = os.getenv("SECURE_HSTS_PRELOAD", "False").lower() == "true"
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "True").lower() == "true"
@@ -125,21 +145,12 @@ if not DEBUG:
         "https://iamhub.net",
         "https://www.iamhub.net",
     ]
+    # Optionally auto-add the Render origin to CORS in prod
+    if RENDER_HOST:
+        ro = f"https://{RENDER_HOST}"
+        if ro not in CORS_ALLOWED_ORIGINS:
+            CORS_ALLOWED_ORIGINS.append(ro)
 
-# Auto-allow the Render hostname if present
-render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")  # e.g. iamhub-fresh-b0gi.onrender.com
-if render_host:
-    if render_host not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS += [render_host]
-    parent = "." + ".".join(render_host.split(".")[1:])
-    if parent not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS += [parent]
-    origin = f"https://{render_host}"
-    if "CSRF_TRUSTED_ORIGINS" in globals():
-        if origin not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS += [origin]
-    else:
-        CSRF_TRUSTED_ORIGINS = [origin]
-
-print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
-print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
+if DEBUG:
+    print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
+    print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
