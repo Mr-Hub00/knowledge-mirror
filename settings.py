@@ -26,6 +26,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 INSTALLED_APPS = [
+    'grappelli',               # <-- must be first!
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
