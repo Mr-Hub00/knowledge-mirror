@@ -1,6 +1,20 @@
+# --- Core framework ---
 Django>=5.0,<6.0
-requests>=2.32
+
+# --- WSGI server for Render (production) ---
 gunicorn>=22.0
+
+# --- Static files (CSS/JS/images) ---
 whitenoise>=6.7
-python-dotenv
-dj-database-url
+
+# --- Environment variable loader (local dev, harmless on Render) ---
+python-dotenv>=1.0
+
+# --- Database URL parser (Postgres on Render, SQLite locally) ---
+dj-database-url>=2.1
+
+# --- HTTP client (for Storacha, APIs, etc.) ---
+requests>=2.32
+
+# --- Django admin skin ---
+django-grappelli
