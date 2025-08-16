@@ -11,7 +11,6 @@ DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",") if os.environ.get("ALLOWED_HOSTS") else []
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if os.environ.get("CSRF_TRUSTED_ORIGINS") else []
 
-print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -126,3 +125,21 @@ if not DEBUG:
         "https://iamhub.net",
         "https://www.iamhub.net",
     ]
+
+# Auto-allow the Render hostname if present
+render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")  # e.g. iamhub-fresh-b0gi.onrender.com
+if render_host:
+    if render_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS += [render_host]
+    parent = "." + ".".join(render_host.split(".")[1:])
+    if parent not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS += [parent]
+    origin = f"https://{render_host}"
+    if "CSRF_TRUSTED_ORIGINS" in globals():
+        if origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS += [origin]
+    else:
+        CSRF_TRUSTED_ORIGINS = [origin]
+
+print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
+print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
