@@ -27,3 +27,5 @@ reportlab
 
 # --- API schema & docs ---
 drf-spectacular
+
+django-cors-headers

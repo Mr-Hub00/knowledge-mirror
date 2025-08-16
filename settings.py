@@ -1,5 +1,4 @@
 import os
-from django.db import models
 from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
@@ -11,9 +10,6 @@ DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",") if os.environ.get("ALLOWED_HOSTS") else []
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if os.environ.get("CSRF_TRUSTED_ORIGINS") else []
-
-# print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
-# print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -39,7 +35,20 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "drf_spectacular",
+    "corsheaders",             # <-- add if you need CORS
     "core",  # your main app
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',   # <-- add (before Common)
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 # Storacha feature flag and config
@@ -60,7 +69,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 # --- Shareable stamp links (stateless, HMAC) ---
-FEATURE_SHARE_STAMP = os.getenv("FEATURE_SHARE_STAMP", "True").lower() == "true"            # flip to False to disable instantly
+FEATURE_SHARE_STAMP = os.getenv("FEATURE_SHARE_STAMP", "True").lower() == "true"
 SHARELINK_TTL_SECONDS = 60 * 60       # 1 hour TTL
 
 # --- Email basics ---
@@ -108,11 +117,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 CORS_ALLOW_ALL_ORIGINS = True  # Change this in production!
 CORS_ALLOW_CREDENTIALS = True
 
-# Whitelist specific origins for production
 if not DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = False
     CORS_ALLOWED_ORIGINS = [
         "https://iamhub-fresh-b0gi.onrender.com",
-        "https://*.onrender.com",
         "https://iamhub.net",
         "https://www.iamhub.net",
     ]
