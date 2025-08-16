@@ -24,3 +24,6 @@ djangorestframework
 
 # --- PDF generation ---
 reportlab
+
+# --- API schema & docs ---
+drf-spectacular
