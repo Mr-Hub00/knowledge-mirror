@@ -17,7 +17,7 @@ services:
           name: iamhub-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: "iamhub.net,.onrender.com"
+        value: "iamhub.net,.onrender.com,localhost,127.0.0.1"
       - key: STORACHA_ENABLED
         value: "True"
       - key: STORACHA_BRIDGE_URL
