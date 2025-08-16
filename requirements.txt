@@ -3,3 +3,4 @@ requests>=2.32
 gunicorn>=22.0
 whitenoise>=6.7
 python-dotenv
+dj-database-url
