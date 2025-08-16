@@ -21,3 +21,6 @@ django-grappelli
 
 # --- Django REST Framework ---
 djangorestframework
+
+# --- PDF generation ---
+reportlab
