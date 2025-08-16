@@ -9,7 +9,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-default-key")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",") if os.environ.get("ALLOWED_HOSTS") else []
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if os.environ.get("CSRF_TRUSTED_ORIGINS") else []
+
+# print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
+# print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -97,8 +101,18 @@ SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "True").lower() == "t
 CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "True").lower() == "true"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
-
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # Change this in production!
+CORS_ALLOW_CREDENTIALS = True
+
+# Whitelist specific origins for production
+if not DEBUG:
+    CORS_ALLOWED_ORIGINS = [
+        "https://iamhub-fresh-b0gi.onrender.com",
+        "https://*.onrender.com",
+        "https://iamhub.net",
+        "https://www.iamhub.net",
+    ]
