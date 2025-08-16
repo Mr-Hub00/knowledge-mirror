@@ -88,19 +88,5 @@ CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "True") == "True"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 import os
-import re
 
-raw_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
-ALLOWED_HOSTS = [h.strip() for h in raw_hosts.split(",") if h.strip()]
-
-# Allow wildcard for .onrender.com
-class WildcardList(list):
-    def __contains__(self, key):
-        for host in self:
-            if host.startswith(".") and key.endswith(host):
-                return True
-            if key == host:
-                return True
-        return False
-
-ALLOWED_HOSTS = WildcardList(ALLOWED_HOSTS)
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
