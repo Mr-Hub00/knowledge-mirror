@@ -22,3 +22,5 @@ urlpatterns = [
     path("", home, name="home"),  # root URL
     path("favicon.ico", RedirectView.as_view(url="/static/favicon.ico", permanent=True)),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+urlpatterns += [path("health/", health)]

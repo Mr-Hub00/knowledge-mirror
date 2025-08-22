@@ -10,8 +10,6 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")  # loads if present; safe to keep for local dev
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mrhub.settings")
-
 # Core toggles
 DEBUG = os.getenv("DEBUG", "True") == "True"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-default-key")
@@ -21,7 +19,8 @@ def env_list(name: str):
     raw = os.getenv(name, "")
     return [item.strip() for item in raw.split(",") if item.strip()]
 
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS") or ["iamhub.net", "www.iamhub.net", "mrhub.fly.dev", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS") or ["iamhub.net", "www.iamhub"
+".net", "127.0.0.1", "localhost"]
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS") or (
     ["http://127.0.0.1:8000", "http://localhost:8000"] if DEBUG else []
 )
@@ -155,21 +154,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Security (tighten automatically when DEBUG=False)
 # -----------------------------------------------------------
 if not DEBUG:
-    SECURE_SSL_REDIRECT = False  # <-- set to False for Fly.io
+    # Only enable these in real HTTPS behind a reverse proxy (nginx, etc.)
+    SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() == "true"
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "31536000"))  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+    SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))  # keep 0 until HTTPS is real
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
     SECURE_REFERRER_POLICY = "strict-origin"
     X_FRAME_OPTIONS = "DENY"
     CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = ["https://mrhub.fly.dev"]
+    CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 else:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False   # Redirect HTTP to HTTPS in dev too
+    SECURE_SSL_REDIRECT = False
 
 # -----------------------------------------------------------
 # Logging (quiet in dev, informative in prod)
