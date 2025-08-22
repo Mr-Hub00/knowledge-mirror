@@ -174,4 +174,141 @@ Point your DNS as instructed by Fly.io.
 
 ---
 
-**You’re now ready for a smooth Django
+# Django Local Docker Compose Deployment Guide
+
+---
+
+## 1. Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
+- (Optional) [Python](https://www.python.org/downloads/) and `pip` for local dev
+
+---
+
+## 2. Project Structure
+
+```
+mrhub/
+├── core/
+├── mrhub/
+│   ├── settings.py
+│   ├── .env
+│   └── ...
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+└── DEPLOYMENT.md
+```
+
+---
+
+## 3. Docker Compose Setup
+
+**docker-compose.yml:**
+```yaml
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mrhub
+      POSTGRES_USER: mrhub
+      POSTGRES_PASSWORD: mrhub
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    command: gunicorn mrhub.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    working_dir: /code
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+```
+
+---
+
+## 4. Environment Variables
+
+**.env** (example for local dev):
+```
+DEBUG=True
+DJANGO_SECRET_KEY=dev-only-not-for-prod
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+DATABASE_URL=postgres://mrhub:mrhub@db:5432/mrhub
+```
+
+---
+
+## 5. Pin Django Version
+
+In `requirements.txt`:
+```
+Django==4.2.23
+psycopg2-binary
+# ...other dependencies...
+```
+
+---
+
+## 6. Useful Commands
+
+```powershell
+docker compose up --build
+docker compose up -d
+docker compose logs -f web
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py collectstatic --noinput
+docker compose down
+```
+
+---
+
+## 7. Favicon (Optional)
+
+- Place `favicon.ico` in `core/static/`
+- Add to your base template:
+  ```html
+  <link rel="icon" href="{% static 'favicon.ico' %}">
+  ```
+- Collect static files:
+  ```powershell
+  docker compose exec web python manage.py collectstatic --noinput
+  ```
+
+---
+
+## 8. Healthcheck (Optional)
+
+Add to `docker-compose.yml` under `web:`:
+```yaml
+healthcheck:
+  test: ["CMD", "curl", "-fsS", "http://localhost:8000/health/"]
+  interval: 30s
+  timeout: 5s
+  retries: 3
+```
+
+---
+
+## 9. Checklist
+
+- [ ] Removed `version:` from compose
+- [ ] Django version pinned in `requirements.txt`
+- [ ] Gunicorn used for production-ish runs
+- [ ] `.env` present and loaded
+- [ ] (Optional) favicon added
+- [ ] `docker compose up --build` shows no errors
+
+---
+
+**You’re now ready for robust local Docker Compose Django development! 🚀**
