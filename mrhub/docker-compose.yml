@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    environment:
+      - DJANGO_SETTINGS_MODULE
+      - STORACHA_ENABLED=True
+      - STORACHA_SECRET=your-generated-secret
+      - STORACHA_AUTH=your-generated-auth
+      - STORACHA_SPACE_DID=your-space-did
+      - STORACHA_BRIDGE_URL=https://up.storacha.network/bridge
+
+# Optional Postgres, when you're ready:
+#  db:
+#    image: postgres:15
+#    environment:
+#      POSTGRES_DB: mrhub
+#      POSTGRES_USER: mrhub
+#      POSTGRES_PASSWORD: mrhub
+#    ports:
+#      - "5432:5432"

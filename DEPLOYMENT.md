@@ -1,98 +1,177 @@
-# Django Render Deployment Guide
+# Django Fly.io Deployment Guide
 
-## 1. Save and Stage Your Changes
-
-Make sure all your code (especially `settings.py`) is saved.
+## 1. Install Fly CLI & Log In
 
 ```sh
-git add .
+# Windows (PowerShell)
+iwr https://fly.io/install.ps1 -useb | iex
+
+fly auth login
 ```
 
-## 2. Commit Your Changes
+---
 
-Write a clear commit message:
+## 2. Add a Dockerfile
 
-```sh
-git commit -m "Update settings.py: auto-allow Render host, fix ALLOWED_HOSTS/CSRF"
+Create a `Dockerfile` in your project root:
+
+```dockerfile
+FROM python:3.13-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential libjpeg-dev zlib1g-dev libfreetype6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . /app/
+
+RUN python manage.py collectstatic --noinput || true
+
+EXPOSE 8000
+CMD ["gunicorn", "mrhub.wsgi:application", "--bind", "0.0.0.0:8000"]
 ```
 
-## 3. Push to Your Remote Branch
+---
 
-Replace `knowledge` with your branch name if different:
+## 3. Update `settings.py` for Fly.io
 
-```sh
-git push origin knowledge
-```
-
-## 4. Trigger a Clean Deploy on Render
-
-1. Go to your [Render dashboard](https://dashboard.render.com/).
-2. Select your service.
-3. Click **Manual Deploy**.
-4. Choose **Clear build cache & deploy**.
-
-## 5. Set/Check Environment Variables on Render
-
-In your Render service → **Environment** tab, set:
-
-- **ALLOWED_HOSTS**
-  ```
-  iamhub-fresh-b0gi.onrender.com,iamhub.net,www.iamhub.net,.onrender.com
-  ```
-- **CSRF_TRUSTED_ORIGINS**
-  ```
-  https://iamhub-fresh-b0gi.onrender.com,https://iamhub.net,https://www.iamhub.net,https://*.onrender.com
-  ```
-- **DJANGO_SECRET_KEY** (should already be set and strong)
-
-## 6. Confirm Static Files Are Collected
-
-Your `render.yaml` should include:
-
-```yaml
-buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-```
-
-## 7. Check the Build Logs
-
-Look for lines like:
-
-```
-ALLOWED_HOSTS: [...]
-CSRF_TRUSTED_ORIGINS: [...]
-```
-
-Make sure your Render domain(s) are present in both lists.
-
-## 8. Test Your Site
-
-- Visit: `https://iamhub-fresh-b0gi.onrender.com/storacha/health`
-- Visit: `https://iamhub-fresh-b0gi.onrender.com/admin`
-
-You should **not** see any `DisallowedHost` errors.
-
-## 9. (Optional) Remove Debug Prints
-
-After confirming everything works, remove or comment out the `print()` lines in `settings.py`:
+- Remove any Render-specific hostname code.
+- Add this after your ALLOWED_HOSTS/CSRF setup:
 
 ```python
-# print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
-# print("CSRF_TRUSTED_ORIGINS:", CSRF_TRUSTED_ORIGINS)
+FLY_APP_NAME = os.getenv("FLY_APP_NAME")
+if FLY_APP_NAME:
+    fly_host = f"{FLY_APP_NAME}.fly.dev"
+    if fly_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(fly_host)
+    origin = f"https://{fly_host}"
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 ```
 
-Then repeat steps 1–4 to deploy the cleanup.
+---
+
+## 4. Initialize Fly App
+
+```sh
+fly launch --no-deploy
+# Choose your app name (e.g., iamhub), region, and keep Dockerfile
+```
 
 ---
 
-**Troubleshooting:**
+## 5. Edit `fly.toml`
 
-- If you see `DisallowedHost`, check the build logs for what Django sees in `ALLOWED_HOSTS`.
-- Make sure your environment variables are set with **no quotes, no spaces, no extra commas**.
-- If you change environment variables, always redeploy with **Clear build cache**.
+Make sure it looks like this (adjust `app = "iamhub"`):
+
+```toml
+app = "iamhub"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 40
+    soft_limit = 20
+
+  [[http_service.checks]]
+    interval = "10s"
+    timeout = "2s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/storacha/health"
+
+[deploy]
+  release_command = "python manage.py migrate"
+```
 
 ---
 
-**You’re ready for production!
-git add mrhub/settings.py
-git commit -m "Fix ALLOWED_HOSTS/CSRF, middleware order, and CORS for Render"
-git push origin knowledge 
+## 6. (Optional) Add a Database
+
+```sh
+fly postgres create --name iamhub-db --regions iad --vm-size shared-cpu-1x --initial-cluster-size 1
+fly postgres attach iamhub-db --app iamhub
+```
+
+---
+
+## 7. Set Secrets (Environment Variables)
+
+```sh
+fly secrets set `
+  DJANGO_SECRET_KEY=1wTfL0zNAHmo7wNqHNGn1tt7ZN074vKGxsdVwR8W5rIWCBEjDl `
+  DEBUG=False `
+  ALLOWED_HOSTS=iamhub.fly.dev,iamhub.net,www.iamhub.net `
+  CSRF_TRUSTED_ORIGINS=https://iamhub.fly.dev,https://iamhub.net,https://www.iamhub.net `
+  STORACHA_ENABLED=True `
+  STORACHA_SPACE_DID=did:key:z6MkkYs8Hoo6cXHbfjH7mQPKzVz7D6hz4nBjCyNRxmCcqsCA
+```
+
+---
+
+## 8. Deploy
+
+```sh
+fly deploy
+```
+
+Check logs:
+
+```sh
+fly logs
+```
+
+---
+
+## 9. Test
+
+Visit:  
+`https://iamhub.fly.dev/storacha/health`  
+You should see a JSON response.
+
+---
+
+## 10. Add Custom Domains (when ready)
+
+```sh
+fly certificates add iamhub.net
+fly certificates add www.iamhub.net
+```
+
+Point your DNS as instructed by Fly.io.
+
+---
+
+## 11. Handy Operations
+
+- Scale:
+  ```sh
+  fly scale count 1
+  fly scale memory 256
+  ```
+- SSH in:
+  ```sh
+  fly ssh console
+  python manage.py createsuperuser
+  ```
+
+---
+
+**You’re now ready for a smooth Django
