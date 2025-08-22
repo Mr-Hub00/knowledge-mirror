@@ -1,27 +1,25 @@
-version: "3.9"
-
 services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: mrhub
+      POSTGRES_USER: mrhub
+      POSTGRES_PASSWORD: mrhub
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: bash -lc "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    working_dir: /code
     ports:
       - "8000:8000"
+    env_file:
+      - ./.env
     volumes:
       - .:/code
-    environment:
-      - DJANGO_SETTINGS_MODULE
-      - STORACHA_ENABLED=True
-      - STORACHA_SECRET=your-generated-secret
-      - STORACHA_AUTH=your-generated-auth
-      - STORACHA_SPACE_DID=your-space-did
-      - STORACHA_BRIDGE_URL=https://up.storacha.network/bridge
+    depends_on:
+      - db
 
-# Optional Postgres, when you're ready:
-#  db:
-#    image: postgres:15
-#    environment:
-#      POSTGRES_DB: mrhub
-#      POSTGRES_USER: mrhub
-#      POSTGRES_PASSWORD: mrhub
-#    ports:
-#      - "5432:5432"
+volumes:
+  pgdata:

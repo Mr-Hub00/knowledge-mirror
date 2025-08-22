@@ -1,11 +1,11 @@
 # --- Core framework ---
-Django>=4.2,<4.3
+Django==4.2.23  # or your chosen LTS
 
 # --- WSGI server for Render (production) ---
-gunicorn>=22.0
+gunicorn==23.0.0
 
 # --- Static files (CSS/JS/images) ---
-whitenoise>=6.7
+whitenoise==6.9.0
 
 # --- Environment variable loader (local dev, harmless on Render) ---
 python-dotenv>=1.0
@@ -20,7 +20,7 @@ requests>=2.32
 django-grappelli
 
 # --- Django REST Framework ---
-djangorestframework
+djangorestframework==3.16.1
 
 # --- PDF generation ---
 reportlab
@@ -29,3 +29,5 @@ reportlab
 drf-spectacular
 
 django-cors-headers
+
+psycopg2-binary

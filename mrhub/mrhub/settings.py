@@ -1,4 +1,4 @@
-# filepath: c:\Users\P\Desktop\IAMHUB\mrhub\mrhub\settings.py
+# filepath: c:\Users\P\Desktop\IAMHUB\mrhub\mrhub\mrhub\settings.py
 import os
 from pathlib import Path
 
@@ -14,22 +14,34 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mrhub.settings")
 
 # Core toggles
 DEBUG = os.getenv("DEBUG", "True") == "True"
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-not-for-prod")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-default-key")
 
-# ALLOWED_HOSTS: always include your Fly domain, avoid duplicates/empties
-allowed_hosts_env = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
-if "mrhub.fly.dev" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append("mrhub.fly.dev")
+# --- HOSTS / CSRF / CORS (generic) ---
+def env_list(name: str):
+    raw = os.getenv(name, "")
+    return [item.strip() for item in raw.split(",") if item.strip()]
 
-# CSRF_TRUSTED_ORIGINS: always include your Fly domain, avoid duplicates/empties
-csrf_origins_env = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
-    "http://localhost,http://127.0.0.1,https://iamhub.net,https://*.onrender.com"
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS") or ["iamhub.net", "www.iamhub.net", "mrhub.fly.dev", "127.0.0.1", "localhost"]
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS") or (
+    ["http://127.0.0.1:8000", "http://localhost:8000"] if DEBUG else []
 )
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins_env.split(",") if o.strip()]
-if "https://mrhub.fly.dev" not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append("https://mrhub.fly.dev")
+
+# CORS (tight in prod, wide in dev)
+CORS_ALLOW_CREDENTIALS = True
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
+
+# Basic security sane defaults
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() == "true"
+SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False").lower() == "true"
+CSRF_COOKIE_SECURE   = os.getenv("CSRF_COOKIE_SECURE", "False").lower() == "true"
+SECURE_HSTS_SECONDS  = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv("SECURE_HSTS_INCLUDE_SUBDOMAINS", "False").lower() == "true"
+SECURE_HSTS_PRELOAD  = os.getenv("SECURE_HSTS_PRELOAD", "False").lower() == "true"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # -----------------------------------------------------------
 # Installed apps
@@ -130,7 +142,12 @@ USE_TZ = True
 # -----------------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
-STORAGES = {"staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}}
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    }
+}
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

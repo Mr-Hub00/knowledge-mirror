@@ -3,11 +3,13 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mrhub.settings")
 
-try:
-    if os.getenv("STORACHA_ENABLED", "False").lower() == "true":
-        from storacha_tokens import start_token_refresher
-        start_token_refresher()
-except Exception:
-    pass
+# Only start storacha token job if explicitly enabled
+if os.getenv("STORACHA_ENABLED", "False").lower() == "true":
+    try:
+        from storacha_tokens import start_token_refresher  # noqa
+        # start_token_refresher()   # call only if you really need it at boot
+    except Exception as e:
+        # Log and continue – don't block app boot in local dev
+        print("Storacha not started:", e)
 
 application = get_wsgi_application()

@@ -15,4 +15,4 @@ def health(request):
     return JsonResponse({"status": "ok"})
 
 def index(request):
-    return render(request, "index.html")
+    return HttpResponse("IAmHub is running ✅")
