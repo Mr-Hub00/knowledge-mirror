@@ -1,11 +1,11 @@
 # --- Core framework ---
-Django==4.2.23  # or your chosen LTS
+Django==4.2.13  # or your chosen LTS
 
 # --- WSGI server for Render (production) ---
-gunicorn==23.0.0
+gunicorn==22.0.0
 
 # --- Static files (CSS/JS/images) ---
-whitenoise==6.9.0
+whitenoise==6.7.0
 
 # --- Environment variable loader (local dev, harmless on Render) ---
 python-dotenv>=1.0
@@ -30,4 +30,4 @@ drf-spectacular
 
 django-cors-headers
 
-psycopg2-binary
+psycopg2-binary==2.9.9

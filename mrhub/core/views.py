@@ -11,8 +11,8 @@ def home(request):
 def storacha_health(request):
     return JsonResponse({"storacha": "ok"})
 
-def health(request):
-    return JsonResponse({"status": "ok"})
+def health(request): 
+    return HttpResponse("ok")
 
 def index(request):
     return HttpResponse("IAmHub is running ✅")

@@ -10,7 +10,7 @@ services:
 
   web:
     build: .
-    command: bash -lc "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: gunicorn mrhub.wsgi:application --bind 0.0.0.0:8000 --workers 3
     working_dir: /code
     ports:
       - "8000:8000"
@@ -20,6 +20,13 @@ services:
       - .:/code
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    environment:
+      DJANGO_SETTINGS_MODULE: mrhub.settings
 
 volumes:
   pgdata:
