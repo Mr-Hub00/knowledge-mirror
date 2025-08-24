@@ -29,7 +29,9 @@ media/
 # OS files
 .DS_Store
 Thumbs.db
-.env
 *.env
 staticfiles/
 static/
+
+# Docker files
+Docker Desktop Installer.exe
