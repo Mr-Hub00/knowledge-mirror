@@ -1,0 +1,97 @@
+name: Mirror mrhub -> knowledge-mirror
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 minutes
+  workflow_dispatch:
+
+# GITHUB_TOKEN needs write to push
+permissions:
+  contents: write
+  workflows: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    env:
+      # configure via repo Variables for easy changes (Settings → Secrets and variables → Variables)
+      SRC_URL: ${{ vars.SRC_URL || 'git@github.com:Mr-Hub00/mrhub.git' }}
+      TARGET_REPO: ${{ vars.TARGET_REPO || 'Mr-Hub00/knowledge-mirror' }}
+
+    steps:
+      - name: Configure git identity
+        run: |
+          git config --global user.name "mirror-bot"
+          git config --global user.email "mirror-bot@users.noreply.github.com"
+          echo "Configured git:"
+          git config --global --list
+
+      # Start ssh-agent with your private deploy key (secret in *knowledge-mirror* repo)
+      - name: Start ssh-agent (pinned SHA)
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387
+        with:
+          ssh-private-key: ${{ secrets.SRC_DEPLOY_KEY }}
+
+      - name: Pre-flight debug
+        run: |
+          echo "SRC_URL=${SRC_URL}"
+          echo "TARGET_REPO=${TARGET_REPO}"
+          echo "Testing SSH to github.com (non-fatal)…"
+          ssh -T git@github.com || true
+
+      - name: Clone source as mirror (with debug)
+        env:
+          # print verbose SSH logs for this step
+          GIT_SSH_COMMAND: "ssh -v"
+        run: |
+          set -euo pipefail
+          echo "Cloning bare mirror…"
+          git clone --mirror "$SRC_URL" repo.git
+          echo "After clone; workspace listing:"
+          ls -la
+          echo "Inspecting repo.git:"
+          cd repo.git
+          git rev-parse --is-bare-repository
+          git remote -v
+          echo "Refs (first 20):"
+          git for-each-ref --count=20 --format='%(objectname:short) %(refname)'
+
+      - name: Update from origin (with debug)
+        run: |
+          set -euo pipefail
+          cd repo.git
+          echo "Setting origin URL to $SRC_URL"
+          git remote set-url origin "$SRC_URL"
+          git remote -v
+          echo "Fetching/pruning…"
+          git remote update --prune
+          echo "Refs after fetch (first 20):"
+          git for-each-ref --count=20 --format='%(objectname:short) %(refname)'
+
+      - name: Push to target (GITHUB_TOKEN) with debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd repo.git
+          TARGET_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git"
+          if ! git remote | grep -qx target; then
+            echo "Adding target remote…"
+            git remote add target "$TARGET_URL"
+          else
+            echo "Updating target remote URL…"
+            git remote set-url target "$TARGET_URL"
+          fi
+          echo "Remotes:"
+          git remote -v
+          echo "Pushing --mirror to target…"
+          git push --mirror target
+          echo "Push complete."
+
+      - name: Post-push summary
+        run: |
+          cd repo.git
+          echo "Final refs (first 20):"
+          git for-each-ref --count=20 --format='%(objectname:short) %(refname)'
+          echo "Mirror job finished ✅"
