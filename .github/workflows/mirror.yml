@@ -8,7 +8,6 @@ on:
 # GITHUB_TOKEN needs write to push
 permissions:
   contents: write
-  workflows: write
 
 jobs:
   sync:
@@ -16,8 +15,8 @@ jobs:
 
     env:
       # configure via repo Variables for easy changes (Settings → Secrets and variables → Variables)
-      SRC_URL: ${{ vars.SRC_URL || 'git@github.com:Mr-Hub00/mrhub.git' }}
-      TARGET_REPO: ${{ vars.TARGET_REPO || 'Mr-Hub00/knowledge-mirror' }}
+      SRC_URL: git@github.com:Mr-Hub00/mrhub.git
+      # Remove TARGET_REPO from env and reference secrets.TARGET_REPO directly in steps
 
     steps:
       - name: Configure git identity
@@ -32,6 +31,16 @@ jobs:
         uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387
         with:
           ssh-private-key: ${{ secrets.SRC_DEPLOY_KEY }}
+          # Ensure that SRC_DEPLOY_KEY is set in repository secrets:
+          # Go to your repository → Settings → Secrets and variables → Actions → New repository secret
+          # Name: SRC_DEPLOY_KEY, Value: <your private deploy key>
+
+      - name: Set SRC_URL default if empty
+        id: srcurl
+        run: |
+          if [ -z "${SRC_URL}" ]; then
+            echo "SRC_URL=git@github.com:Mr-Hub00/mrhub.git" >> $GITHUB_ENV
+          fi
 
       - name: Pre-flight debug
         run: |
