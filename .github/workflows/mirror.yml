@@ -1,74 +1,64 @@
-name: Mirror mrhub -> knowledge-mirror
+name: Mirror mrhub to knowledge-mirror
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/10 * * * *"   # every 10 minutes
   workflow_dispatch:
 
 permissions:
   contents: write
-  workflows: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     env:
-      SRC_URL: git@github.com:Mr-Hub00/mrhub.git
-      TARGET_REPO: ${{ vars.TARGET_REPO }}
-
+      SRC_URL: git@github.com:Mr-Hub00/mrhub.git   # source via SSH
+      SRC_BRANCH: knowledge                         # source branch to mirror
+      TARGET_REPO: Mr-Hub00/knowledge-mirror        # target repo (this repo)
     steps:
       - name: Configure git identity
         run: |
           git config --global user.name "mirror-bot"
           git config --global user.email "mirror-bot@users.noreply.github.com"
 
-      - name: Start ssh-agent (pinned)
+      - name: Start ssh-agent (pinned SHA)
         uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387
         with:
           ssh-private-key: ${{ secrets.SRC_DEPLOY_KEY }}
 
-      - name: Pre-flight debug
-        run: |
-          echo "SRC_URL=${SRC_URL}"
-          echo "TARGET_REPO=${TARGET_REPO}"
-          ssh -T git@github.com || true
-
-      - name: Clone source as mirror (with debug)
+      - name: Clone source (non-bare)
         env:
           GIT_SSH_COMMAND: "ssh -v"
         run: |
           set -euo pipefail
-          git clone --mirror "$SRC_URL" repo.git
-          cd repo.git
-          git rev-parse --is-bare-repository
-          git remote -v
-          git for-each-ref --count=20 --format='%(objectname:short) %(refname)'
+          git clone "$SRC_URL" repo
+          cd repo
+          git fetch --all --prune
+          git checkout "$SRC_BRANCH"
 
-      - name: Update from origin
+      - name: Remove workflow files on branch (avoid permissions block)
         run: |
           set -euo pipefail
-          cd repo.git
-          git remote set-url origin "$SRC_URL"
-          git remote update --prune
-          git for-each-ref --count=20 --format='%(objectname:short) %(refname)'
+          cd repo
+          git rm -rf --ignore-unmatch .github/workflows || true
+          if ! git diff --quiet; then
+            git commit -m "[mirror] strip .github/workflows from ${SRC_BRANCH}"
+          fi
 
-      - name: Push to target (GITHUB_TOKEN) with debug
+      - name: Push to target (branch only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          cd repo.git
+          cd repo
           TARGET_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git"
+
           if ! git remote | grep -qx target; then
             git remote add target "$TARGET_URL"
           else
             git remote set-url target "$TARGET_URL"
           fi
-          git remote -v
-          git push --mirror target
 
-      - name: Post-push summary
-        run: |
-          cd repo.git
-          git for-each-ref --count=20 --format='%(objectname:short) %(refname)'
-          echo "Mirror job finished ✅"
+          echo "Pushing ${SRC_BRANCH} -> ${SRC_BRANCH} (force)…"
+          git push target "${SRC_BRANCH}:${SRC_BRANCH}" --force
+          echo "Done."
