@@ -28,5 +28,21 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: mrhub.settings
 
+  repo-mirror:
+    image: bitnami/git:latest
+    environment:
+      - SRC_URL=https://github.com/Mr-Hub00/mrhub.git
+      - TARGET_URL=https://git.example.com/Mr-Hub00/mrhub.git
+      - MIRROR_DIR=/mirrors/mrhub.git
+    volumes:
+      - ./mirrors:/mirrors
+      - ./scripts:/scripts:ro
+    entrypoint: ["/bin/bash", "-lc"]
+    command: >
+      "while true;
+       do /scripts/mirror-sync.sh && echo synced $(date);
+       sleep 300;
+       done"
+
 volumes:
   pgdata:
